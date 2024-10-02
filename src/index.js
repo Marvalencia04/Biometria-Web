@@ -32,10 +32,10 @@ app.get("/api/gases", async (req, res) => {
 });
 
 // Ruta para comprobar la conexion de Post
-app.post("/api/gases", async (req, res) => {
+/*app.post("/api/gases", async (req, res) => {
   try {
     const [result] = await pool.query(
-      "INSERT INTO Medidas.Gases (gas, valor, hora, lugar) VALUES ('CO2', 4.16, '2024-09-15', 'Prueba 1')"
+      "INSERT INTO Medidas.Gases (gas, valor, hora, lugar) VALUES ('CO2', 4.16, '2024-09-15', 'Prueba 2')"
     );
 
     // Responder con la medida insertada
@@ -49,7 +49,37 @@ app.post("/api/gases", async (req, res) => {
       details: error.message,
     });
   }
+});*/
+app.post("/api/gases", async (req, res) => {
+  // Extraer parámetros del cuerpo de la solicitud
+  const { gas, valor, hora, lugar } = req.body;
+
+  try {
+    // Usar parámetros variables en la consulta SQL
+    const [result] = await pool.query(
+      "INSERT INTO Medidas.Gases (gas, valor, hora, lugar) VALUES (?, ?, ?, ?)", 
+      [gas, valor, hora, lugar]  // Pasar los parámetros recibidos a la consulta
+    );
+
+    // Responder con la medida insertada
+    res.status(201).json({
+      id: result.insertId,
+      gas, 
+      valor, 
+      hora, 
+      lugar,
+    });
+  } catch (error) {
+    console.error('Error al insertar medida:', error);
+
+    // En caso de error, enviar un mensaje genérico
+    res.status(500).json({
+      error: 'Error al insertar medida',
+      details: error.message,
+    });
+  }
 });
+
 //
 app.listen(PORT, () => {
   console.log("Server is running on port", PORT);
